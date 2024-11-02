@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { useRouter } from 'next/navigation'
 import { Icons } from '@/components/ui/icons'
 import type { Organizations, Profiles } from '@/lib/types/database.types'
+import { type ControllerRenderProps } from 'react-hook-form'
 
 const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -30,14 +31,8 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>
 
-interface FieldProps {
-  field: {
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onBlur: () => void;
-    value: string;
-    name: string;
-    ref: React.Ref<HTMLInputElement>;
-  };
+type FormFieldContextValue = {
+  field: ControllerRenderProps<RegisterFormValues, keyof RegisterFormValues>
 }
 
 export function RegisterForm() {
@@ -117,15 +112,15 @@ export function RegisterForm() {
         <FormField
           control={form.control}
           name="email"
-          render={({ field }: FieldProps) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="name@example.com"
                   type="email"
-                  disabled={isLoading}
+                  placeholder="name@example.com"
                   {...field}
+                  disabled={isLoading}
                 />
               </FormControl>
               <FormMessage />
@@ -136,15 +131,15 @@ export function RegisterForm() {
         <FormField
           control={form.control}
           name="password"
-          render={({ field }: FieldProps) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Create a password"
                   type="password"
-                  disabled={isLoading}
+                  placeholder="Create a password"
                   {...field}
+                  disabled={isLoading}
                 />
               </FormControl>
               <FormMessage />
@@ -155,14 +150,15 @@ export function RegisterForm() {
         <FormField
           control={form.control}
           name="fullName"
-          render={({ field }: FieldProps) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
                 <Input
+                  type="text"
                   placeholder="John Doe"
-                  disabled={isLoading}
                   {...field}
+                  disabled={isLoading}
                 />
               </FormControl>
               <FormMessage />
@@ -173,14 +169,15 @@ export function RegisterForm() {
         <FormField
           control={form.control}
           name="organizationName"
-          render={({ field }: FieldProps) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Organization Name</FormLabel>
               <FormControl>
                 <Input
+                  type="text"
                   placeholder="Acme Inc"
-                  disabled={isLoading}
                   {...field}
+                  disabled={isLoading}
                 />
               </FormControl>
               <FormMessage />
@@ -191,14 +188,15 @@ export function RegisterForm() {
         <FormField
           control={form.control}
           name="organizationSlug"
-          render={({ field }: FieldProps) => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Organization URL</FormLabel>
               <FormControl>
                 <Input
+                  type="text"
                   placeholder="acme"
-                  disabled={isLoading}
                   {...field}
+                  disabled={isLoading}
                 />
               </FormControl>
               <FormMessage className="text-xs">

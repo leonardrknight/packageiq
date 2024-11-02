@@ -3,34 +3,15 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { LoginForm } from '@/components/auth/login-form'
 import { RegisterForm } from '@/components/auth/register-form'
 import { Suspense } from 'react'
 
-export default async function Page() {
+export default async function RegisterPage() {
   const cookieStore = cookies()
   const supabase = createClient(cookieStore)
 
   // Check if user is already logged in
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-  
-  if (sessionError) {
-    console.error('Session error:', sessionError)
-    return (
-      <div className="container flex h-screen w-screen flex-col items-center justify-center">
-        <Card className="w-[350px]">
-          <CardHeader>
-            <CardTitle>Error</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-red-600">
-              Unable to verify session. Please try again later.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+  const { data: { session } } = await supabase.auth.getSession()
 
   // Redirect to dashboard if already logged in
   if (session) {
@@ -42,18 +23,18 @@ export default async function Page() {
       <Suspense fallback={<div>Loading...</div>}>
         <Card className="w-[400px]">
           <CardHeader>
-            <CardTitle>Welcome to PackageIQ</CardTitle>
+            <CardTitle>Create an Account</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Sign in to your account to continue
+              Get started with PackageIQ
             </p>
           </CardHeader>
           <CardContent>
-            <LoginForm />
+            <RegisterForm />
             <div className="mt-4 text-center">
               <p className="text-sm text-muted-foreground">
-                Don&apos;t have an account?{' '}
-                <Button variant="link" className="p-0" onClick={() => redirect('/register')}>
-                  Register
+                Already have an account?{' '}
+                <Button variant="link" className="p-0" onClick={() => redirect('/')}>
+                  Sign In
                 </Button>
               </p>
             </div>

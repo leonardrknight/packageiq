@@ -1,8 +1,9 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { type NextRequest, NextResponse } from "next/server"
-import { Database } from "@/lib/types/database.types"
+import type { Database } from "@/lib/types/database.types"
 
 export async function middleware(request: NextRequest) {
+  // Create an unmodified response
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -18,6 +19,16 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
           response.cookies.set({
             name,
             value,
@@ -25,9 +36,17 @@ export async function middleware(request: NextRequest) {
           })
         },
         remove(name: string, options: CookieOptions) {
-          response.cookies.set({
+          request.cookies.delete({
             name,
-            value: '',
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.delete({
+            name,
             ...options,
           })
         },
@@ -35,24 +54,44 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // Check auth status
   const { data: { session } } = await supabase.auth.getSession()
 
   // Protected routes that require authentication
-  const protectedPaths = ['/dashboard', '/projects', '/catalog']
-  const path = request.nextUrl.pathname
+  const protectedPaths = ['/dashboard', '/projects', '/catalog', '/settings']
+  const isProtectedPath = protectedPaths.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  )
 
-  if (protectedPaths.some(prefix => path.startsWith(prefix))) {
-    if (!session) {
-      const redirectUrl = new URL('/', request.url)
-      return NextResponse.redirect(redirectUrl)
-    }
+  // Auth routes (only accessible when not logged in)
+  const authPaths = ['/', '/login', '/register']
+  const isAuthPath = authPaths.some(path => 
+    request.nextUrl.pathname === path
+  )
+
+  // Handle protected routes
+  if (isProtectedPath && !session) {
+    return NextResponse.redirect(new URL('/', request.url))
+  }
+
+  // Handle auth routes
+  if (isAuthPath && session) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return response
 }
 
+// Configure which routes to run middleware on
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
     '/((?!_next/static|_next/image|favicon.ico|public/).*)',
   ],
 } 
